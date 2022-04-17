@@ -94,6 +94,10 @@ class DBUpdater:
                 for idx in range(len(data_all)):
                     market = data_all.market.values[idx]
                     korean_name = data_all.korean_name.values[idx]
+                    if market == "KRW-XEC" and korean_name == '이캐시':
+                        continue
+                    if market == "KRW-BTT" and korean_name == '비트토렌트':
+                        continue
                     sql = f"REPLACE INTO KRWData (market, korean_name, last"\
                     f"_update) VALUES ('{market}', '{korean_name}', '{today}')"
                     curs.execute(sql)
@@ -132,7 +136,7 @@ class DBUpdater:
             
             tmnow = datetime.now().strftime('%Y-%m-%d %H:%M')
             print('{} {}/{}are downloading....'.format(tmnow, market, korean_name))
-            df[['open','high','low','close','volume']] = df[['open','high','low','close','volume']].astype(float)
+            df[['open','high','low','close','volume']] = df[['open','high','low','close','volume']].astype(int)
             
             df = df[['market','date','open','high','low','close','volume']]
         except Exception as e:
