@@ -28,7 +28,7 @@ class DBUpdater:
     def __init__(self):
         """생성자 :MariaDB 연결 및 종목코드 딕셔너리 생성"""
         self.conn = pymysql.connect(host= 'localhost', user='root',
-                                   password='****', db='Upbit', charset='utf8')
+                                   password = '1234', db='Upbit', charset='utf8')
         
         with self.conn.cursor() as curs:
             sql = """
@@ -115,8 +115,8 @@ class DBUpdater:
             secret = ''
 
             upbit = pyupbit.Upbit(access, secret)
-            name = np.array(data_all['market'])
-            df = pyupbit.get_ohlcv("KRW-BTC", count = pages_to_fetch)
+            
+            df = pyupbit.get_ohlcv(market, count = pages_to_fetch)
             df = df.drop('value', axis=1) # value의 값은 DB에 넣지 않을 것이기에 제거
 
 
@@ -125,7 +125,6 @@ class DBUpdater:
             arr_date = []
             for i in range(1, pages_to_fetch + 1):
                 date = (tmnow_date_time - timedelta(days = pages_to_fetch - i)).strftime('%Y-%m-%d')
-                #df.insert(0, 'date', date)
                 arr_date += [date]
 
             df.insert(0, 'market', market)    
@@ -133,7 +132,7 @@ class DBUpdater:
             
             tmnow = datetime.now().strftime('%Y-%m-%d %H:%M')
             print('{} {}/{}are downloading....'.format(tmnow, market, korean_name))
-            df[['open','high','low','close','volume']] = df[['open','high','low','close','volume']].astype(int)
+            df[['open','high','low','close','volume']] = df[['open','high','low','close','volume']].astype(float)
             
             df = df[['market','date','open','high','low','close','volume']]
         except Exception as e:
