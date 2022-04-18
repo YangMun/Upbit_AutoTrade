@@ -43,7 +43,7 @@ class DBUpdater:
             sql = """
             CREATE TABLE  IF NOT EXISTS daily_price (
             market VARCHAR(20),
-            date VARCHAR(20),
+            date DATE,
             open BIGINT(20),
             high BIGINT(20),
             low BIGINT(20),
