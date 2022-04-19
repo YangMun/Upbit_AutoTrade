@@ -76,7 +76,6 @@ class DualMomentum:
             new_price = int(result[0])
             returns = (new_price / old_price - 1) * 100
             rows.append([market, self.mk.codes[market], old_price, new_price, returns])
-        
         # 상대 모멘텀 데이터 프레임을 생성한 후 수익률순으로 출력
         df = pd.DataFrame(rows, columns=columns)
         df = df[['market', 'korean_name', 'old_price', 'new_price', 'returns']]
@@ -84,9 +83,9 @@ class DualMomentum:
         df = df.head(stock_count)
         df.index = pd.Index(range(stock_count))
         connection.close()
-        print(df)
-        print(f"\nRelative momentum ({start_date} ~ {end_date}) : "\
-             f"{df['returns'].mean():.2f}% \n")
+        #print(df)
+        #print(f"\nRelative momentum ({start_date} ~ {end_date}) : "\
+             #f"{df['returns'].mean():.2f}% \n")
         return df
     
     def get_abs_momentum(self, rltv_momentum, start_date, end_date):
@@ -147,7 +146,7 @@ class DualMomentum:
         df = df[['market', 'korean_name', 'old_price', 'new_price', 'returns']]
         df = df.sort_values(by = 'returns', ascending=False)
         connection.close()
-        print(df)
-        print(f"\nRelative momentum ({start_date} ~ {end_date}) : "\
-             f"{df['returns'].mean():.2f}% \n")
+        #print(df)
+        #print(f"\nRelative momentum ({start_date} ~ {end_date}) : "\
+             #f"{df['returns'].mean():.2f}% \n")
         return 

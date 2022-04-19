@@ -111,10 +111,6 @@ class DBUpdater:
     def read_Upbit(self, market, korean_name, pages_to_fetch):
         """업비트 시세를 읽어서 데이터프레임으로 전환"""
         try:
-            data_all = self.read_KRW_code()
-            
-            name = np.array(data_all['market'])
-
             access = ''
             secret = ''
 
@@ -149,14 +145,14 @@ class DBUpdater:
         """코인 시세를 DB에 REPLACE"""
         with self.conn.cursor() as curs:
             for r in df.itertuples():
-                sql = f"REPLACE INTO daily_price VALUES ('{r.market}', '{r.date}', {r.open}, {r.high}, {r.low},{r.close}, {r.volume})"
+                sql = f"REPLACE INTO daily_price VALUES ('{r.market}', '{r.date}', {r.open}, {r.high}, ""{r.low},{r.close}, {r.volume})"
                 curs.execute(sql)
             self.conn.commit()
             print('[{}] # {:04d} {} ({}) : {} rows > REPLACE INTO daily_'\
                   'price [OK]'.format(datetime.now().strftime('%Y-%m-%d %H:%M'), num+1, korean_name, market, len(df)))
     
     def update_daily_price(self, pages_to_fetch):
-            """KRX 상장법인의 주식 시세를 네이버로부터 읽어서 DB에 업데이트"""
+            """Upbit 주식을 DB에 업데이트"""
             for idx, market in enumerate(self.codes):
                 df = self.read_Upbit(market, self.codes[market], pages_to_fetch)
                 if df is None:
@@ -201,3 +197,8 @@ if __name__ == '__main__':
 
 
                     
+# -
+df = pyupbit.get_ohlcv(market, count = pages_to_fetch)
+
+
+
