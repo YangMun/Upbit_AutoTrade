@@ -14,4 +14,3 @@ date type VARCHAR -> DATE
 
 2022-04-20
 Main_Code.py 올림 
-ㄱ
