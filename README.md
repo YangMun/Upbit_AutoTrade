@@ -18,6 +18,7 @@ Main_Code.py 올림
 2022-04-21
 볼린저 밴드를 사용하여 count = 100개의 상위 종목을 구해 for문 안 조건에 따라 매수, 매도 실행
 
-
 Main_Code = 매수기법을 통해 매수, 오전 9시 되기 일정 시간 초 전에 전부 매도 하는 방식
 Main_BollingerBand = 볼린저 매수 매매기법을 통해 매수 또는 매도, 마찬가지로 9시 되기 일정 시간 초 전에는 볼린저 매도 기법을 통해 일정치 이하이면 매도
+
+New_Bollinger_Buy = Main_Code 와 Main_BollingerBand 코드를 합쳐 놓은 것 만약 사용한다면 위에 두 코드보다 이 코드를 추천
