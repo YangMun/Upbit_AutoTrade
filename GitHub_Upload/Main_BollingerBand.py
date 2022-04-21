@@ -25,8 +25,8 @@ import datetime
 import Analyzer
 
 
-access = 'XDL1DIGrnFhBxYKthq5O7LHBt4WNMR61RAS9G0w5'
-secret = 'rRjVhnSdUasB7lbgYk8Ke4xL5Xdhclxc6o3hCSFx'
+access = ''
+secret = ''
 
 
 
