@@ -137,16 +137,14 @@ while True:
                     if buy_krw * current_price <= 250000:
                         upbit.buy_market_order(market[mk], krw*0.139)
                         print(f"{market[mk]} 구매, {buy_krw}현재 보유 금액")
+                    if df.PB.values[mk] > 0.8 and df.MFI10.values[mk] > 80:
+                        upbit.buy_market_order(market[mk], krw*0.139)
+                        print(f"{market[mk]} 구매, {buy_krw}현재 보유 금액")
+                    elif df.PB.values[mk] < 0.2 and df.MFI10.values[mk] < 20:
+                        upbit.sell_market_order(market[mk], buy_krw*0.139)
+                        print(f"{market[mk]} 매도, 남은 금액 {buy_krw}")
                     else:
-                        for i in range(len(df.close)):
-                            if df.PB.values[i] > 0.8 and df.MFI10.values[i] > 80:
-                                upbit.buy_market_order(market[mk], krw*0.139)
-                                print(f"{market[mk]} 구매, {buy_krw}현재 보유 금액")
-                            elif df.PB.values[i] < 0.2 and df.MFI10.values[i] < 20:
-                                upbit.sell_market_order(market[bk], btc*0.139)
-                                print(f"{market[bk]} 매도, 남은 금액 {buy_krw}")
-                            else:
-                                continue
+                        continue
                 else:
                     continue
         else:
@@ -154,7 +152,7 @@ while True:
                 slice_market = market[bk].split('-')[1]  # KRW- 뒤에 부분만 얻기 위함
                 buy_krw = get_balance(slice_market)
                 if buy_krw >0.0000001:
-                    upbit.sell_market_order(market[bk], btc*0.139)
+                    upbit.sell_market_order(market[bk], buy_krw*0.139)
                     print(f"{market[bk]} 매도, 남은 금액 {buy_krw}")
                 else:
                     continue
