@@ -33,13 +33,13 @@ secret = ''
 def get_momentum(count):
     """3개월 전 날짜로 상대 모멘텀 상위 10개 구하기"""
     today = arrow.now()
-    three_months_ago = today.shift(months=-3)
+    one_months_ago = today.shift(months=-1)
 
     today = today.strftime('%Y-%m-%d') # 오늘 날짜
-    three_months_ago = three_months_ago.strftime('%Y-%m-%d') # 3개월 전 날짜
+    one_months_ago = one_months_ago.strftime('%Y-%m-%d') # 1개월 전 날짜
 
     dm = Dual.DualMomentum()
-    rm = dm.get_rltv_momentum(three_months_ago, today, count) #상대 모멘텀
+    rm = dm.get_rltv_momentum(one_months_ago, today, count) #상대 모멘텀
 
     market = np.array(rm['market']) # 배열로 저장
     return market
@@ -48,12 +48,12 @@ def get_BollingerBand(market):
     mk = Analyzer.MarketDB()
     
     today = arrow.now()
-    three_months_ago = today.shift(months=-3)
+    one_months_ago = today.shift(months=-1)
 
     today = today.strftime('%Y-%m-%d') # 오늘 날짜
-    three_months_ago = three_months_ago.strftime('%Y-%m-%d') # 3개월 전 날짜
+    one_months_ago = one_months_ago.strftime('%Y-%m-%d') # 1개월 전 날짜
     
-    df = mk.get_daily_price(market, three_months_ago, today)
+    df = mk.get_daily_price(market, one_months_ago, today)
     df['MA20'] = df['close'].rolling(window=20).mean()
     df['stddev'] = df['close'].rolling(window=20).std()
     df['upper'] = df['MA20'] + (df['stddev'] * 2)
@@ -107,12 +107,24 @@ def get_balance(market):
                 return 0
     return 0
 
+def get_buy_price(market):
+    """내가 산 종목의 금액"""
+    balances = upbit.get_balances()
+    for b in balances:
+        if b['currency'] == market:
+            if b['avg_buy_price'] is not None:
+                return float(b['avg_buy_price'])
+            else:
+                return 0
+    return 0
+
 def get_current_price(market):
     """현재가 조회"""
     return pyupbit.get_orderbook(market)["orderbook_units"][0]["ask_price"]
 
 
 upbit = pyupbit.Upbit(access, secret)
+myMoney = 2000000
 
 while True:
     try:
@@ -124,7 +136,7 @@ while True:
             dbu = DBUpdater.DBUpdater()
             dbu.execute_daily()
         if start_time < now < end_time - datetime.timedelta(seconds=15):
-            market = get_momentum(10)
+            market = get_momentum(20)
             
             """market 개수인 10번을 반복하여 매수 매매 반복 시킨다 (10만원 까지만 사용 가능하도록 한다.)"""
             for mk in range(len(market)):
@@ -134,15 +146,21 @@ while True:
                 current_price = get_current_price(market[mk])
                 slice_market = market[mk].split('-')[1]  # KRW- 뒤에 부분만 얻기 위함
                 krw = get_balance("KRW")
+                
+                buy_avg_price = get_buy_price(slice_market) # 매수 평균가
+                buy_count = upbit.get_balance(market[mk]) # 매수 한 양
+                total_buy = buy_count * buy_avg_price
                 buy_krw = get_balance(slice_market)
                 print(f"현재 가격 :{current_price} ... 매수 목표가 : {target_price}")
                 if target_price < current_price:
-                    if df == 1 and buy_krw * current_price <= 500000:
-                        upbit.buy_market_order(market[mk], krw * 0.9995)
-                        print(market[mk]," 매수 , 현재 보유 금액: ", buy_krw * current_price)
+                    if df == 1 and total_buy <= 390000:
+                        upbit.buy_market_order(market[mk], myMoney * 0.2)
+                        print(market[mk]," 매수 , 현재 보유 금액: ", total_buy)
+                    else:
+                        continue
                 elif df == 0 and buy_krw * current_price > 0.0000001:
                     upbit.sell_market_order(market[bk], buy_krw)
-                    print(market[mk]," 매도 , 현재 보유 금액: ", buy_krw * current_price)
+                    print(market[mk]," 매도 , 현재 보유 금액: ",  total_buy)
                 else:
                     continue
         else:
@@ -159,6 +177,3 @@ while True:
     except Exception as e:
         print(e)
         time.sleep(1)
-# -
-
-
