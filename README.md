@@ -14,3 +14,6 @@ date type VARCHAR -> DATE
 
 2022-04-20
 Main_Code.py 올림 
+
+2022-04-21
+볼린저 밴드를 사용하여 count = 100개의 상위 종목을 구해 for문 안 조건에 따라 매수, 매도 실행
