@@ -23,5 +23,4 @@ Main_BollingerBand = 볼린저 매수 매매기법을 통해 매수 또는 매�
 
 New_Bollinger_Buy = Main_Code 와 Main_BollingerBand 코드를 합쳐 놓은 것 만약 사용한다면 위에 두 코드보다 이 코드를 추천
 
-2022-04-22
-매수 조건에서 40만원 이하이면 매수이나, 매수 총 합을 구해서 정상적이게 작동하도록 수정함
+
