@@ -33,13 +33,13 @@ secret = ''
 def get_momentum(count):
     """3개월 전 날짜로 상대 모멘텀 상위 10개 구하기"""
     today = arrow.now()
-    one_months_ago = today.shift(months=-1)
+    three_months_ago = today.shift(months=-3)
 
     today = today.strftime('%Y-%m-%d') # 오늘 날짜
-    one_months_ago = one_months_ago.strftime('%Y-%m-%d') # 1개월 전 날짜
+    three_months_ago = three_months_ago.strftime('%Y-%m-%d') # 1개월 전 날짜
 
     dm = Dual.DualMomentum()
-    rm = dm.get_rltv_momentum(one_months_ago, today, count) #상대 모멘텀
+    rm = dm.get_rltv_momentum(three_months_ago, today, count) #상대 모멘텀
 
     market = np.array(rm['market']) # 배열로 저장
     return market
@@ -48,12 +48,12 @@ def get_BollingerBand(market):
     mk = Analyzer.MarketDB()
     
     today = arrow.now()
-    one_months_ago = today.shift(months=-1)
+    three_months_ago = today.shift(months=-3)
 
     today = today.strftime('%Y-%m-%d') # 오늘 날짜
-    one_months_ago = one_months_ago.strftime('%Y-%m-%d') # 1개월 전 날짜
+    three_months_ago = three_months_ago.strftime('%Y-%m-%d') # 1개월 전 날짜
     
-    df = mk.get_daily_price(market, one_months_ago, today)
+    df = mk.get_daily_price(market, three_months_ago, today)
     df['MA20'] = df['close'].rolling(window=20).mean()
     df['stddev'] = df['close'].rolling(window=20).std()
     df['upper'] = df['MA20'] + (df['stddev'] * 2)
@@ -142,7 +142,7 @@ while True:
             for mk in range(len(market)):
                 df = get_BollingerBand(market[mk])
                         
-                target_price = np.array(get_target_price(market[mk], 0.5))
+                target_price = np.array(get_target_price(market[mk], 0.5))# 0.375
                 current_price = get_current_price(market[mk])
                 slice_market = market[mk].split('-')[1]  # KRW- 뒤에 부분만 얻기 위함
                 krw = get_balance("KRW")
@@ -151,16 +151,33 @@ while True:
                 buy_count = upbit.get_balance(market[mk]) # 매수 한 양
                 total_buy = buy_count * buy_avg_price
                 buy_krw = get_balance(slice_market)
-                print(f"현재 가격 :{current_price} ... 매수 목표가 : {target_price}")
-                if target_price < current_price:
-                    if df == 1 and total_buy <= 390000:
-                        upbit.buy_market_order(market[mk], myMoney * 0.2)
-                        print(market[mk]," 매수 , 현재 보유 금액: ", total_buy)
-                    else:
-                        continue
+                print(f"{market[mk]} 의 현재 가격 : {current_price} ... 매수 목표가 : {target_price}")
+                print(market[mk], "의 목표 매도가 : ", buy_avg_price * 1.1, "추가 매수 가 :", buy_avg_price * 0.95)
+
+                if target_price < current_price and current_price >= 150:
+                    if total_buy <= 490000 and krw >= 510000:
+                        upbit.buy_market_order(market[mk], myMoney * 0.25)
+                        print(market[mk]," 일반 매수 , 현재 보유 금액: ", total_buy)
+
+                    elif current_price <= buy_avg_price * 0.95:
+                        if total_buy <= 740000  and krw >= 260000:
+                            upbit.buy_market_order(market[mk], myMoney * 0.15)
+                            print(market[mk],"5%이상 하락 후 추가 매수 , 현재 보유 금액: ",  total_buy)
+
+                elif target_price < current_price and current_price >= 150:
+                    if df == 1 and total_buy <= 490000 and krw >= 510000:
+                        upbit.buy_market_order(market[mk], myMoney * 0.25)
+                        print(market[mk]," 정교한 매수 , 현재 보유 금액: ", total_buy)
+
+                    elif current_price <= buy_avg_price * 0.95:
+                        if total_buy <= 740000  and krw >= 260000:
+                            upbit.buy_market_order(market[mk], myMoney * 0.15)
+                            print(market[mk],"5%이상 하락 후 추가 매수 , 현재 보유 금액: ",  total_buy)
+
                 elif df == 0 and buy_krw * current_price > 0.0000001:
-                    upbit.sell_market_order(market[bk], buy_krw)
+                    upbit.sell_market_order(market[mk], buy_krw)
                     print(market[mk]," 매도 , 현재 보유 금액: ",  total_buy)
+
                 else:
                     continue
         else:
