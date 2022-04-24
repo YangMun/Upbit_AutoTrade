@@ -23,4 +23,8 @@ Main_BollingerBand = 볼린저 매수 매매기법을 통해 매수 또는 매�
 
 New_Bollinger_Buy = Main_Code 와 Main_BollingerBand 코드를 합쳐 놓은 것 만약 사용한다면 위에 두 코드보다 이 코드를 추천
 
-
+2022-04-24
+Upbit_Candle_Chart 파일은 원하는 종목의 캔들차트를 볼 수 있게 만들었다
+사용법 - import Upbit_Candle_Chart 
+        변수1 = Candle_Chart()
+        변수2 = 변수1.New_Candle_Chart(원하는 종목)  Ex) "KRW-BTC" 또는 비트코인 (단. 한글로 사용 시 title이 깨짐, 결과는 정상적으로 잘 나옴)
