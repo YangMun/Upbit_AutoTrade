@@ -110,12 +110,7 @@ class DBUpdater:
     
     def read_Upbit(self, market, korean_name, pages_to_fetch):
         """업비트 시세를 읽어서 데이터프레임으로 전환"""
-        try:
-            access = ''
-            secret = ''
-
-            upbit = pyupbit.Upbit(access, secret)
-            
+        try:          
             df = pyupbit.get_ohlcv(market, count = pages_to_fetch)
             df = df.drop('value', axis=1) # value의 값은 DB에 넣지 않을 것이기에 제거
 
