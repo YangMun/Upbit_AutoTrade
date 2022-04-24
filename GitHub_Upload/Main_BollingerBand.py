@@ -25,8 +25,8 @@ import datetime
 import Analyzer
 
 
-access = ''
-secret = ''
+access = 'XDL1DIGrnFhBxYKthq5O7LHBt4WNMR61RAS9G0w5'
+secret = 'rRjVhnSdUasB7lbgYk8Ke4xL5Xdhclxc6o3hCSFx'
 
 
 
@@ -75,7 +75,13 @@ def get_BollingerBand(market):
     df['MFI10'] = 100 - 100 / (1 + df['MFR'])
     df = df[19:]
     
-    return df
+    for i in range(len(df.close)):
+        if df.PB.values[i] > 0.8 and df.MFI10.values[i] > 80:
+            return 1
+        elif df.PB.values[i] < 0.2 and df.MFI10.values[i] < 20:
+            return 0
+    
+    return 0
     
 
 def get_start_time(market):
@@ -101,38 +107,34 @@ def get_current_price(market):
     return pyupbit.get_orderbook(market)["orderbook_units"][0]["ask_price"]
 
 
-
-
 upbit = pyupbit.Upbit(access, secret)
 
+myMoney = 0 # 현재 금액 
 while True:
     try:
         now = datetime.datetime.now()
         start_time = get_start_time(get_momentum(1)) # 09:00
         end_time = start_time + datetime.timedelta(days=1) # 다음 날 09:00
     
-        if start_time < now < end_time - datetime.timedelta(seconds=15):
-            market = get_momentum(50)
-            """market 개수인 10번을 반복하여 매수 매매 반복 시킨다 (10만원 까지만 사용 가능하도록 한다.)"""
+        if start_time < now + datetime.timedelta(seconds = 30) < end_time - datetime.timedelta(seconds=30):
+            market = get_momentum(10)
+            
             for mk in range(len(market)):
                 df = get_BollingerBand(market[mk])
                 current_price = get_current_price(market[mk])
                 slice_market = market[mk].split('-')[1]  # KRW- 뒤에 부분만 얻기 위함
                 krw = get_balance("KRW")
-                buy_krw = get_balance(slice_market)
-                """내 잔고가 5천원 이상이고 매수 한 종목의 잔고가 10만원 이하일 때까지"""
-                if df.PB.values[mk] > 0.8 and df.MFI10.values[mk] > 80:
+                buy_krw = get_balance(slice_market) # 내가 산 가격
+                
+                if df == 1:
                     if buy_krw * current_price <= 400000:
-                        upbit.buy_market_order(market[mk], krw*0.9995)
+                        upbit.buy_market_order(market[mk], myMoney * 0.3)
                         print(f"{market[mk]} 구매, {buy_krw * current_price}현재 보유 금액")
                     else:
                         continue
-                elif df.PB.values[mk] < 0.2 and df.MFI10.values[mk] < 20:
-                    if buy_krw > 0.0000001:  
-                        upbit.sell_market_order(market[mk], buy_krw*0.9995)
-                        print(f"{market[mk]} 매도, 남은 금액 {buy_krw * current_price}")
-                    else:
-                        continue
+                elif df == 0:
+                    upbit.sell_market_order(market[mk], myMoney)
+                    print(f"{market[mk]} 매도, 남은 금액 {buy_krw * current_price}")
                 else:
                     continue
                         
