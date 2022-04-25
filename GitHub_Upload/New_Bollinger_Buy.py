@@ -26,8 +26,8 @@ import Analyzer
 
 
 
-access = ''
-secret = ''
+access = 'XDL1DIGrnFhBxYKthq5O7LHBt4WNMR61RAS9G0w5'
+secret = 'rRjVhnSdUasB7lbgYk8Ke4xL5Xdhclxc6o3hCSFx'
 
 
 def get_momentum(count):
@@ -75,11 +75,11 @@ def get_BollingerBand(market):
     df['MFI10'] = 100 - 100 / (1 + df['MFR'])
     df = df[19:]
     
-    for i in range(len(df.close)):
-        if df.PB.values[i] > 0.8 and df.MFI10.values[i] > 80:
-            return 1
-        elif df.PB.values[i] < 0.2 and df.MFI10.values[i] < 20:
-            return 0
+    
+    if df.PB.values[-1] > 0.8 and df.MFI10.values[-1] > 80:
+        return 1
+    elif df.PB.values[-1] < 0.2 and df.MFI10.values[-1] < 20:
+        return 0
     
     return 0
 
@@ -135,8 +135,8 @@ while True:
         if start_time == now:
             dbu = DBUpdater.DBUpdater()
             dbu.execute_daily()
-        if start_time < now < end_time - datetime.timedelta(seconds=15):
-            market = get_momentum(20)
+        if start_time + datetime.timedelta(seconds=30) < now < end_time - datetime.timedelta(seconds=30):
+            market = get_momentum(10)
             
             """market 개수인 10번을 반복하여 매수 매매 반복 시킨다 (10만원 까지만 사용 가능하도록 한다.)"""
             for mk in range(len(market)):
@@ -148,9 +148,9 @@ while True:
                 krw = get_balance("KRW")
                 
                 buy_avg_price = get_buy_price(slice_market) # 매수 평균가
-                buy_count = upbit.get_balance(market[mk]) # 매수 한 양
+                buy_count = get_balance(slice_market) # 매수 한 양
                 total_buy = buy_count * buy_avg_price
-                buy_krw = get_balance(slice_market)
+                                        
                 print(f"{market[mk]} 의 현재 가격 : {current_price} ... 매수 목표가 : {target_price}")
                 print(market[mk], "의 목표 매도가 : ", buy_avg_price * 1.1, "추가 매수 가 :", buy_avg_price * 0.95)
 
@@ -174,8 +174,8 @@ while True:
                             upbit.buy_market_order(market[mk], myMoney * 0.15)
                             print(market[mk],"5%이상 하락 후 추가 매수 , 현재 보유 금액: ",  total_buy)
 
-                elif df == 0 and buy_krw * current_price > 0.0000001:
-                    upbit.sell_market_order(market[mk], buy_krw)
+                elif df == 0 and buy_count > 0.0000001:
+                    upbit.sell_market_order(market[mk], buy_count)
                     print(market[mk]," 매도 , 현재 보유 금액: ",  total_buy)
 
                 else:
@@ -184,9 +184,9 @@ while True:
             for bk in range(len(market)):
                 slice_market = market[bk].split('-')[1]  # KRW- 뒤에 부분만 얻기 위함
                 krw = get_balance("KRW")
-                buy_krw = get_balance(slice_market)
-                if buy_krw >0.0000001:
-                    upbit.sell_market_order(market[bk], buy_krw)
+                buy_count = get_balance(slice_market)
+                if buy_count > 0.0000001:
+                    upbit.sell_market_order(market[bk], buy_count)
                     print(market[mk]," 전액 매도 ")
                 else:
                     continue
@@ -194,3 +194,10 @@ while True:
     except Exception as e:
         print(e)
         time.sleep(1)
+# -
+print(upbit.get_balance("KRW-ZIL"))
+
+
+print(get_balance("ZIL"))
+
+

@@ -75,11 +75,10 @@ def get_BollingerBand(market):
     df['MFI10'] = 100 - 100 / (1 + df['MFR'])
     df = df[19:]
     
-    for i in range(len(df.close)):
-        if df.PB.values[i] > 0.8 and df.MFI10.values[i] > 80:
-            return 1
-        elif df.PB.values[i] < 0.2 and df.MFI10.values[i] < 20:
-            return 0
+    if df.PB.values[-1] > 0.8 and df.MFI10.values[-1] > 80:
+        return 1
+    elif df.PB.values[-1] < 0.2 and df.MFI10.values[-1] < 20:
+        return 0
     
     return 0
     
@@ -102,6 +101,17 @@ def get_balance(market):
                 return 0
     return 0
 
+def get_buy_price(market):
+    """내가 산 종목의 금액"""
+    balances = upbit.get_balances()
+    for b in balances:
+        if b['currency'] == market:
+            if b['avg_buy_price'] is not None:
+                return float(b['avg_buy_price'])
+            else:
+                return 0
+    return 0
+
 def get_current_price(market):
     """현재가 조회"""
     return pyupbit.get_orderbook(market)["orderbook_units"][0]["ask_price"]
@@ -109,14 +119,14 @@ def get_current_price(market):
 
 upbit = pyupbit.Upbit(access, secret)
 
-myMoney = 0 # 현재 금액 
+myMoney = 1700000 # 현재 금액 
 while True:
     try:
         now = datetime.datetime.now()
         start_time = get_start_time(get_momentum(1)) # 09:00
         end_time = start_time + datetime.timedelta(days=1) # 다음 날 09:00
     
-        if start_time < now + datetime.timedelta(seconds = 30) < end_time - datetime.timedelta(seconds=30):
+        if start_time + datetime.timedelta(seconds=30) < now < end_time - datetime.timedelta(seconds=30):
             market = get_momentum(10)
             
             for mk in range(len(market)):
@@ -124,34 +134,33 @@ while True:
                 current_price = get_current_price(market[mk])
                 slice_market = market[mk].split('-')[1]  # KRW- 뒤에 부분만 얻기 위함
                 krw = get_balance("KRW")
-                buy_krw = get_balance(slice_market) # 내가 산 가격
                 
-                if df == 1:
-                    if buy_krw * current_price <= 400000:
+                buy_avg_price = get_buy_price(slice_market) # 매수 평균가
+                buy_count = get_balance(slice_market) # 매수 한 양
+                total_buy = buy_count * buy_avg_price
+                
+                print(f"{market[mk]} 의 현재 가격 : {current_price} ...")
+                
+                if df == 1 and total_buy <= 490000 and current_price >= 150:
+                    if buy_count * current_price <= 400000:
                         upbit.buy_market_order(market[mk], myMoney * 0.3)
-                        print(f"{market[mk]} 구매, {buy_krw * current_price}현재 보유 금액")
+                        print(f"{market[mk]} 구매, {buy_count * current_price}현재 보유 금액")
                     else:
                         continue
-                elif df == 0:
+                elif df == 0 and buy_count * current_price > 0.0000001:
                     upbit.sell_market_order(market[mk], myMoney)
-                    print(f"{market[mk]} 매도, 남은 금액 {buy_krw * current_price}")
+                    print(f"{market[mk]} 매도, 남은 금액 {buy_count * current_price}")
                 else:
                     continue
                         
         elif start_time == now:
             dbu = DBUpdater.DBUpdater()
             dbu.execute_daily()
-            
-        else:
-            for bk in range(len(market)):
-                slice_market = market[bk].split('-')[1]  # KRW- 뒤에 부분만 얻기 위함
-                buy_krw = get_balance(slice_market)
-                if df.PB.values[bk] < 0.2 and df.MFI10.values[bk] < 20:
-                    upbit.sell_market_order(market[bk], buy_krw*0.9995)
-                    print(f"{market[bk]} 매도, 남은 금액 {buy_krw}")
-                else:
-                    continue
+        
         time.sleep(1)
     except Exception as e:
         print(e)
         time.sleep(1)
+# -
+
+

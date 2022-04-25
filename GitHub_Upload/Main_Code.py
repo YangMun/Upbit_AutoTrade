@@ -25,8 +25,8 @@ import datetime
 
 
 
-access = ''
-secret = ''
+access = 'XDL1DIGrnFhBxYKthq5O7LHBt4WNMR61RAS9G0w5'
+secret = 'rRjVhnSdUasB7lbgYk8Ke4xL5Xdhclxc6o3hCSFx'
 
 
 def get_momentum(count):
@@ -85,20 +85,21 @@ while True:
             dbu.execute_daily()
     
         if start_time < now < end_time - datetime.timedelta(seconds=15):
-            market = get_momentum(50)
+            market = get_momentum(10)
             
             """market 개수인 10번을 반복하여 매수 매매 반복 시킨다 (10만원 까지만 사용 가능하도록 한다.)"""
             for mk in range(len(market)):
-                target_price = np.array(get_target_price(market[mk], 0.7))
+                target_price = np.array(get_target_price(market[mk], 0.5))
                 current_price = get_current_price(market[mk])
                 slice_market = market[mk].split('-')[1]  # KRW- 뒤에 부분만 얻기 위함
+                
                 print(f"현재 가격 :{current_price} ... 매수 목표가 : {target_price}")
                 if target_price < current_price:
                     krw = get_balance("KRW")
                     buy_krw = get_balance(slice_market)
                     """내 잔고가 5천원 이상이고 매수 한 종목의 잔고가 10만원 이하일 때까지"""
                     if buy_krw * current_price <= 400000:
-                        upbit.buy_market_order(market[mk], krw*0.9995)
+                        upbit.buy_market_order(market[mk], krw)
                         print(f"{market[mk]} 구매, {buy_krw}현재 보유 금액")
                 else:
                     continue
@@ -116,7 +117,3 @@ while True:
     except Exception as e:
         print(e)
         time.sleep(1)
-
-# -
-
-
